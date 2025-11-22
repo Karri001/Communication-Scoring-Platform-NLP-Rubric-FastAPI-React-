@@ -1,4 +1,5 @@
 import time
+import os
 from app.models import EvaluationResponse, MetricScore, ExtractedDetails
 from .metrics import (
     detect_salutation,
@@ -10,12 +11,29 @@ from .metrics import (
     filler_words_metric,
     sentiment_metric
 )
-from .semantic import conceptual_coverage
 from .extraction import (
     extract_name, extract_age,
     extract_class, extract_school_class_phrase
 )
 from .utils import word_tokens, sentence_split
+
+# Simple toggle (environment variable)
+ENABLE_SEMANTIC = os.getenv("ENABLE_SEMANTIC", "false").lower() == "true"
+
+if ENABLE_SEMANTIC:
+    from .semantic import conceptual_coverage  # heavy
+else:
+    # Lightweight stub metric
+    def conceptual_coverage(transcript: str):
+        return {
+            "average_similarity": None,
+            "individual_similarities": [],
+            "anchors": [],
+            "band": "disabled",
+            "score": 0,
+            "max": 10,
+            "note": "Semantic metric disabled"
+        }
 
 def build_feedback(metric_id: str, details: dict) -> str:
     if metric_id == "salutation":
@@ -43,6 +61,8 @@ def build_feedback(metric_id: str, details: dict) -> str:
     if metric_id == "engagement":
         return f"Positive sentiment {details['pos_probability']} ({details['band']})."
     if metric_id == "concept":
+        if details.get("band") == "disabled":
+            return "Semantic coverage disabled."
         return f"Conceptual coverage {details['average_similarity']} ({details['band']})."
     return ""
 
@@ -54,7 +74,6 @@ def evaluate_transcript_v2(transcript: str, duration_seconds: float | None = Non
     sc = len(sentences)
     preview = transcript[:240] + ("..." if len(transcript) > 240 else "")
 
-    # Metrics
     sal = detect_salutation(transcript)
     kw = keyword_presence(transcript)
     fl = flow_order(transcript)
@@ -78,6 +97,8 @@ def evaluate_transcript_v2(transcript: str, duration_seconds: float | None = Non
     ]
 
     total = sum(m.raw_score for m in metrics)
+
+    from .extraction import extract_name, extract_age, extract_class, extract_school_class_phrase
     name = extract_name(transcript)
     age = extract_age(transcript)
     cls = extract_class(transcript)
@@ -89,9 +110,12 @@ def evaluate_transcript_v2(transcript: str, duration_seconds: float | None = Non
     )
     perf_ms = int((time.time() - start) * 1000)
 
+    # Adjust max_total when semantic disabled
+    max_total = 110 if ENABLE_SEMANTIC else 100
+
     return EvaluationResponse(
-        total_score=round(total,2),
-        max_total=110,  # now 100 + 10 conceptual coverage
+        total_score=round(total, 2),
+        max_total=max_total,
         word_count=wc,
         sentence_count=sc,
         duration_seconds=duration_seconds,
@@ -99,7 +123,7 @@ def evaluate_transcript_v2(transcript: str, duration_seconds: float | None = Non
         metrics=metrics,
         extracted=extracted,
         transcript_preview=preview,
-        version="2.1.0",
+        version="2.1.1" if ENABLE_SEMANTIC else "2.1.1-lite",
         performance_ms=perf_ms,
-        notes="Conceptual coverage adds semantic similarity; grammar may take longer due to Java."
+        notes="Semantic disabled" if not ENABLE_SEMANTIC else "Full metric set"
     )
