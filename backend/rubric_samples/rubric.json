@@ -1,0 +1,79 @@
+{
+  "criteria": [
+    {
+      "id": "intro_basics",
+      "name": "Introduction Basics",
+      "description": "States name and current role or field clearly at the start.",
+      "keywords": ["name", "student", "role", "currently"],
+      "weight": 0.25,
+      "min_words": 60,
+      "max_words": 180,
+      "enabled": true,
+      "scoring_config": {
+        "keyword_weight": 0.4,
+        "semantic_weight": 0.4,
+        "length_weight": 0.2
+      }
+    },
+    {
+      "id": "goals",
+      "name": "Goals & Interests",
+      "description": "Mentions future goals or current interests related to growth.",
+      "keywords": ["goal", "interest", "aspire", "future"],
+      "weight": 0.2,
+      "min_words": 0,
+      "max_words": 0,
+      "enabled": true,
+      "scoring_config": {
+        "keyword_weight": 0.45,
+        "semantic_weight": 0.45,
+        "length_weight": 0.1
+      }
+    },
+    {
+      "id": "personal_detail",
+      "name": "Personal Detail",
+      "description": "Includes a personal detail or hobby to humanize introduction.",
+      "keywords": ["hobby", "passion", "love", "enjoy"],
+      "weight": 0.15,
+      "min_words": 0,
+      "max_words": 0,
+      "enabled": true,
+      "scoring_config": {
+        "keyword_weight": 0.5,
+        "semantic_weight": 0.4,
+        "length_weight": 0.1
+      }
+    },
+    {
+      "id": "structure_flow",
+      "name": "Structure & Flow",
+      "description": "Content flows logically from introduction to goals and closing.",
+      "keywords": ["first", "then", "finally"],
+      "weight": 0.25,
+      "min_words": 80,
+      "max_words": 220,
+      "enabled": true,
+      "scoring_config": {
+        "keyword_weight": 0.2,
+        "semantic_weight": 0.6,
+        "length_weight": 0.2
+      }
+    },
+    {
+      "id": "conciseness",
+      "name": "Conciseness",
+      "description": "Avoids unnecessary repetition and stays within expected length.",
+      "keywords": ["concise", "brief"],
+      "weight": 0.15,
+      "min_words": 60,
+      "max_words": 200,
+      "enabled": true,
+      "scoring_config": {
+        "keyword_weight": 0.2,
+        "semantic_weight": 0.5,
+        "length_weight": 0.3
+      }
+    }
+  ]
+}
